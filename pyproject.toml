@@ -1,0 +1,33 @@
+[project]
+name = "mxalign"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Michiel Van Ginderachter", email = "michiel.vanginderachter@meteo.be" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cartopy>=0.25.0",
+    "dask>=2026.1.2",
+    "netcdf4>=1.7.4",
+    "scipy>=1.17.0",
+    "xarray>=2026.1.0",
+]
+
+[project.scripts]
+mxalign = "mxalign:main"
+
+[project.optional-dependencies]
+earthkit = [
+    "earthkit-meteo>=0.6.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.2.0",
+]
