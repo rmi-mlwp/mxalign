@@ -9,7 +9,7 @@ from ..properties.properties import Properties, Space, Time, Uncertainty
         uncertainty=Uncertainty.DETERMINISTIC,
     )
 )
-def load(files: str | list[str]):
+def load(files: str | list[str], grid_mapping: str | dict = None, **kwargs):
     import xarray as xr
 
     if isinstance(files, str):
@@ -22,13 +22,14 @@ def load(files: str | list[str]):
     ds = xr.open_mfdataset(
         files, 
         preprocess=_preprocess,
+        **kwargs
     )
 
     ds_out = ds.\
         assign_coords({"lead_time": ("time", lead_times)}).\
         rename_dims({"values": "grid_index"}).\
         swap_dims({"time": "lead_time"})
-    
+
     return ds_out
 
 
