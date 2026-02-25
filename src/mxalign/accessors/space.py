@@ -5,6 +5,8 @@ import numpy as np
 from ..properties.properties import Space
 from ..properties.utils import properties_from_attrs, update_space_property
 
+from ..utils.projections import create_cartopy_crs, BUILTIN
+
 @xr.register_dataset_accessor("space")
 class SpaceAccessor:
     def __init__(self, ds):
@@ -19,9 +21,31 @@ class SpaceAccessor:
     
     def add_crs(self, crs):
         if self.is_point():
-            raise ValueError("Cannot add CRS to a dataset that has both POINT and GRID properties")
+            raise ValueError("Cannot add CRS to a point dataset")
+        if isinstance(crs, str):
+            try:
+                crs = BUILTIN[crs.lower()]
+            except KeyError:
+                raise ValueError("crs: {crs} not found in supported projections")
+        if isinstance(crs, dict):   
+            crs = create_cartopy_crs(
+                projection=crs["projection"],
+                kws_projection=crs["kws_projection"],
+                kws_globe=crs.get("kws_globe", None)
+            )
         return self._ds.assign_attrs({"crs": crs})
     
+    def add_grid_mapping(self, grid_mapping: str | dict):
+        if self.is_point():
+            raise ValueError("Cannot add grid mapping to a point dataset")
+        if isinstance(grid_mapping, str):
+            try:
+                grid_mapping = BUILTIN[grid_mapping.lower()]["kws_grid"]
+            except KeyError:
+                raise ValueError("grid mapping: {grid_mapping} not found in supported mappings")
+        return self._ds.assign_attrs({"grid_mapping": grid_mapping})
+        
+
     def add_xy(self, crs=None):
         if crs is not None:
             self._ds = self.add_crs(crs)
@@ -65,7 +89,7 @@ class SpaceAccessor:
         else:
             raise ValueError("Dataset does not have expected dimensions for GRID")
 
-    def unstack(self, nx, ny, lon_ll, lat_ll, dx, dy, crs=None):
+    def unstack(self, crs=None, **kwargs):
         if self.is_point():
              raise ValueError("POINT datasets cannot be unstacked")
         if not self.is_stacked():
@@ -73,12 +97,24 @@ class SpaceAccessor:
         else:
             if crs: 
                 self.add_crs(crs)
-            mindex = self._create_multiindex(nx, ny, lon_ll, lat_ll, dx , dy)
+            kws_mindex = dict.fromkeys(["nx", "ny", "lon_ll", "lat_ll", "dx", "dy"])
+            for key in kws_mindex.keys():
+                value = kwargs.get(key, None)
+                if value is None:
+                    try:
+                        value = self._ds.attrs["grid_mapping"][key]
+                    except KeyError:
+                        raise KeyError(f"Did not find a value for {key} in the dataset attributes, please provide it as an argument")
+                kws_mindex[key] = value
+            
+            
+            mindex = self._create_multiindex(**kws_mindex)
             mcoords = xr.Coordinates.from_pandas_multiindex(mindex, "grid_index")
             ds_mindex = self._ds.assign_coords(mcoords)
+            ds_mindex.attrs["grid_mapping"] = kws_mindex
             return ds_mindex.unstack()
 
-    def _create_multiindex(self, nx, ny, lon_ll, lat_ll, dx, dy):
+    def _create_multiindex(self, nx, ny, lon_ll, lat_ll, dx, dy, **kwargs):
         from pandas import MultiIndex
         if self._ds.sizes["grid_index"] != nx * ny:
             raise ValueError(f"Size of grid_index ({self._ds.sizes['grid_index']}) does not match product of nx and ny ({nx*ny})" )
