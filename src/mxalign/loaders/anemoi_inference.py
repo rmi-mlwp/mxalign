@@ -9,7 +9,7 @@ from ..properties.properties import Properties, Space, Time, Uncertainty
         uncertainty=Uncertainty.DETERMINISTIC,
     )
 )
-def load(files: str | list[str], grid_mapping: str | dict = None, **kwargs):
+def load(files: str | list[str], **kwargs):
     import xarray as xr
 
     if isinstance(files, str):
