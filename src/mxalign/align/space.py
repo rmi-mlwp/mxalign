@@ -18,7 +18,10 @@ def align_space(datasets, reference, **kwargs):
     ]
 
     if keys is None:
-        return datasets
+        if len(datasets)==1 :
+            return datasets[0]
+        else:
+            return datasets
     else:
         return {key: value for (key, value) in zip(keys, datasets)}
         

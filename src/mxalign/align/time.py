@@ -9,7 +9,7 @@ def align_time(datasets: list[xr.Dataset] | dict[str, xr.Dataset], return_as: st
         datasets = [datasets]
     if isinstance(datasets, dict):
         keys = datasets.keys()
-        datasets = datasets.items()
+        datasets = datasets.values()
     else:
         keys = None
 
