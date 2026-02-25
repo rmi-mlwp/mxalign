@@ -12,16 +12,16 @@ def transform(ds, rename_dict):
     return ds.rename(new_dict)
 
 @register_transformation("kelvin_to_celcius")
-def transform(ds, vars , inverse=False):
+def transform(ds, variables , inverse=False):
     T_C2K = 273.15
-    if isinstance(vars, str):
-        vars = [vars]
+    if isinstance(variables, str):
+        variables = [variables]
     if inverse:
         t = T_C2K
     else:
         t = -T_C2K
 
-    for var in vars:
+    for var in variables:
         ds[var] = ds[var] + t
 
     return(ds)
