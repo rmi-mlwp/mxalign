@@ -23,24 +23,38 @@ from ..properties.properties import Properties, Space, Time, Uncertainty
     
 #     return ds
 
-# @register_loader("point-forecast", properties=( Property.POINT, Property.FORECAST,))
-# def load(files: str | list[str]):
-#     import xarray as xr
+@register_loader(
+    "point-forecast", 
+    properties=Properties(
+        space=Space.POINT,
+        time=Time.FORECAST
+    )
+)
+def load(files: str | list[str]):
+    import xarray as xr
 
-#     if isinstance(files, str):
-#         files = [files] 
+    if isinstance(files, str):
+        files = [files] 
  
-#     ds = xr.open_mfdataset(files, chunks="auto") 
+    ds = xr.open_mfdataset(files, chunks="auto") 
     
-#     return ds
+    return ds
 
-# @register_loader("point-observation", properties=(Property.POINT, Property.OBSERVATION))
-# def load(files: str | list[str]):
-#     import xarray as xr
+@register_loader(
+    "point-observation", 
+    properties=Properties(
+        space=Space.POINT,
+        time=Time.OBSERVATION
+    )
+)
+def load(files: str | list[str], **kwargs):
+    import xarray as xr
 
-#     if isinstance(files, str):
-#         files = [files] 
+    if isinstance(files, str):
+        files = [files] 
  
-#     ds = xr.open_mfdataset(files, chunks="auto") 
-    
-#     return ds
+    ds = xr.open_mfdataset(files, chunks="auto") 
+    ds = ds.rename_dims({"code":"point_index"})
+    for coord in ds.coords:
+        ds[coord] = ds[coord].compute()
+    return ds
