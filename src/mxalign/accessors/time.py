@@ -119,7 +119,7 @@ def _align_observation_forecast(ds_observation, ds_forecast, only_common=False):
         ds_forecast_cut = ds_forecast_cut.sel(reference_time=slice(None, max_reference_time))
 
     ds_observation_aligned = ds_observation.sel(valid_time=ds_forecast_cut.valid_time)
-    
+    ds_observation_aligned = ds_observation_aligned.transpose("reference_time", "lead_time", ...)
     if only_common:
         return ds_observation_aligned, ds_forecast_cut
     else:
