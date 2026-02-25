@@ -19,7 +19,10 @@ class XarrayInterpolator(BaseInterpolator):
 
         else:
             if source_dataset.space.is_stacked():
-                raise ValueError("Dataset must be unstacked to use xarray interpolation")
+                try:
+                    source_dataset = source_dataset.space.unstack()
+                except:
+                    raise ValueError("Cannot unstack dataset, dataset must be unstacked to use xarray interpolation")
             ds_out = self._interpolate_from_xcyc(
                 source_dataset
             )
@@ -50,8 +53,8 @@ class XarrayInterpolator(BaseInterpolator):
         )
 
         ds_out = source_dataset.interp(
-            x=x,
-            y=y,
+            xc=x,
+            yc=y,
             **self.options)
         # ).assing_coords(
         #     longitude=self.target_dataset["longitude"],
