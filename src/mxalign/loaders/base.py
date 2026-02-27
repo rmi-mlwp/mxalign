@@ -15,10 +15,10 @@ class BaseLoader(ABC):
     uncertainty: Uncertainty | None = None
 
     def __init__(self, files, variables=None, grid_mapping=None, **kwargs):
-        self.files=files
-        self.variables=variables
-        self.grid_mapping=grid_mapping
-        self.kwargs=kwargs
+        self.files = files
+        self.variables = [variables] if isinstance(variables,str) else variables
+        self.grid_mapping = grid_mapping
+        self.kwargs = kwargs
 
     def load(self):
         ds = self._load()

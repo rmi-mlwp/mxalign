@@ -141,7 +141,7 @@ class SpaceAccessor:
         )
 
         xc = x_ll + np.arange(nx) * dx 
-        yc = y_ll + np.arange(nx) * dy
+        yc = y_ll + np.arange(ny) * dy
 
         mindex = MultiIndex.from_product(
             [yc, xc],
