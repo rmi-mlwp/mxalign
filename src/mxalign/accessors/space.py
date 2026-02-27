@@ -89,6 +89,20 @@ class SpaceAccessor:
         else:
             raise ValueError("Dataset does not have expected dimensions for GRID")
 
+    def stack(self):
+        if self.is_point():
+            raise ValueError("POINT datasets cannot be stacked")
+        if self.is_stacked():
+            return self._ds
+        else:
+            if {"xc", "yc"}.issubset(self._ds.dims):
+                dims_to_stack = ["yc", "xc"]
+            elif {"lat", "lon"}.issubset(self._ds.dims):
+                dims_to_stack = ["lat", "lon"]
+            else:
+                raise ValueError("Could not find correct dimensions to stack")
+        return self._ds.stack({"grid_index": dims_to_stack}).reset_index("grid_index")
+
     def unstack(self, crs=None, **kwargs):
         if self.is_point():
              raise ValueError("POINT datasets cannot be unstacked")
