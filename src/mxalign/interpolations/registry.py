@@ -2,7 +2,7 @@ _INTERPOLATORS = {}
 
 def register_interpolator(cls):
     _INTERPOLATORS[cls.name] = cls
-    return(cls)
+    return cls
     
 def available_interpolations():
     return list(_INTERPOLATORS.keys())
