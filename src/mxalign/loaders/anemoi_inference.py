@@ -1,6 +1,10 @@
 from .registry import register_loader
 from ..properties.properties import Properties, Space, Time, Uncertainty
 
+DEFAULTS={
+    "chunks": "auto"
+}
+
 @register_loader(
     "anemoi-inference", 
     properties=Properties(
@@ -18,6 +22,8 @@ def load(files: str | list[str], **kwargs):
     times = xr.open_dataset(files[0])["time"].values
     lead_times = times - times[0]    
 
+    for k, v in DEFAULTS.items():
+        kwargs[k] = kwargs.get(k,v)
 
     ds = xr.open_mfdataset(
         files, 
