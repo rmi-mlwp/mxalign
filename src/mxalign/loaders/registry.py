@@ -1,21 +1,16 @@
-_LOADER_REGISTRY = {}
+_LOADERS = {}
 
-def register_loader(name, properties):
-    def decorator(func):
-        _LOADER_REGISTRY[name] = {
-            "func": func,
-            "properties": properties,
-        }
-        return func
-    return decorator
+def register_loader(cls):
+    _LOADERS[cls.name] = cls
+    return cls
 
 
 def available_loaders():
-    return list(_LOADER_REGISTRY.keys())
+    return list(_LOADERS.keys())
 
 
 def get_loader(name):
     try:
-        return _LOADER_REGISTRY[name]
+        return _LOADERS[name]
     except KeyError:
         raise ValueError(f"Unknown loader: {name}")

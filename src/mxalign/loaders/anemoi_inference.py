@@ -1,43 +1,44 @@
 from .registry import register_loader
-from ..properties.properties import Properties, Space, Time, Uncertainty
+from ..properties.properties import Space, Time, Uncertainty
+from .base import BaseLoader
 
 DEFAULTS={
     "chunks": "auto"
 }
 
-@register_loader(
-    "anemoi-inference", 
-    properties=Properties(
-        space = Space.GRID, 
-        time=Time.FORECAST,
-        uncertainty=Uncertainty.DETERMINISTIC,
-    )
-)
-def load(files: str | list[str], **kwargs):
-    import xarray as xr
+@register_loader
+class AnemoiInferenceLoader(BaseLoader):
 
-    if isinstance(files, str):
-        files = [files] 
+    name = "anemoi-inference"
+    
+    space = Space.GRID
+    time=Time.FORECAST
+    uncertainty=Uncertainty.DETERMINISTIC
+
+    def _load(self):
+        import xarray as xr
+        
+        files = [files] if isinstance(self.files, str) else self.files
  
-    times = xr.open_dataset(files[0])["time"].values
-    lead_times = times - times[0]    
+        times = xr.open_dataset(files[0])["time"].values
+        lead_times = times - times[0]    
 
-    for k, v in DEFAULTS.items():
-        kwargs[k] = kwargs.get(k,v)
+        kwargs = self.kwargs.copy()
+        for k, v in DEFAULTS.items():
+            kwargs[k] = self.kwargs.get(k,v)
 
-    ds = xr.open_mfdataset(
-        files, 
-        preprocess=_preprocess,
-        **kwargs
-    )
+        ds = xr.open_mfdataset(
+            files, 
+            preprocess=_preprocess,
+            **kwargs
+        )
 
-    ds_out = ds.\
-        assign_coords({"lead_time": ("time", lead_times)}).\
-        rename_dims({"values": "grid_index"}).\
-        swap_dims({"time": "lead_time"})
+        ds_out = ds.\
+            assign_coords({"lead_time": ("time", lead_times)}).\
+            rename_dims({"values": "grid_index"}).\
+            swap_dims({"time": "lead_time"})
 
-    return ds_out
-
+        return ds_out
 
 def _preprocess(ds):
     ds_out = ds.\
