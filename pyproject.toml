@@ -17,6 +17,7 @@ dependencies = [
     "pyyaml>=6.0.3",
     "scipy>=1.17.0",
     "xarray>=2026.1.0",
+    "zarr<3.0",
 ]
 
 [project.scripts]
@@ -28,6 +29,10 @@ earthkit = [
 ]
 verification = [
     "xskillscore>=0.0.29",
+]
+distributed = [
+    "bokeh>=3.8.2",
+    "distributed>=2026.1.2",
 ]
 
 [build-system]
